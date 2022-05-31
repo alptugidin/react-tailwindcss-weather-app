@@ -1,5 +1,3 @@
-//türkiyedeki şehirler ve onların enlem ve boylamlarını tutan bir array
-
 export const cities = [
   {  name: "Adana",    lat: 37.00, lon: 35.32 },
   {  name: "Adıyaman", lat: 37.73, lon: 38.27 },

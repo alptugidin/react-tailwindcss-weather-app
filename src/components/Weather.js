@@ -1,12 +1,10 @@
 import Card from "./Card";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {cities} from "./cities";
 import {useForecast} from "../context";
-import {data} from "../data";
 import axios from "axios";
 
 const cardEffect = (cards) => {
-
 
 	if (!cards[0].classList.contains("opacity-0")) {
 		cards.map(card => card.classList.add("opacity-0"))
@@ -16,7 +14,7 @@ const cardEffect = (cards) => {
 	const len = cards.length
 	setInterval(() => {
 		if (start < len) {
-			cards[start].classList.toggle("opacity-0")
+			cards[start].classList.remove("opacity-0")
 			start++
 		} else {
 			clearInterval()
@@ -28,6 +26,7 @@ const cardEffect = (cards) => {
 const Weather = () => {
 
 
+	const context = useForecast()
 	const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 	const currentDay = days[new Date().getDay() - 1]
 	const currentIndex = days.indexOf(currentDay)
@@ -35,40 +34,38 @@ const Weather = () => {
 	const arr2 = days.slice(0, currentIndex)
 	const orderedDays = [...arr1, ...arr2, currentDay]
 
-	const context = useForecast()
+	const [render, setRender] = useState(false)
 
-	const handleOnChange = (cards, city) => {
-		cardEffect(cards)
-
-
-
-		axios.get(apiUrl(cities.find(e => e.name === city).lat,cities.find(e => e.name === city).lon))
-			.then(res => {
-				context.setCity(res.data)
-			})
-
-	}
 
 	const apiUrl = (lat, lon) => {
 		return `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&lang=tur&units=metric&exclude=current,minutely,hourly,alerts&APPID=b8fbe538701d657b1c6a0cf89d075344`
 	}
 
-
-	useEffect(() => {
-		const cards = [...document.querySelectorAll(".card")]
-		cards.map(card => card.classList.add("opacity-0"))
-		cardEffect(cards)
-		const firstCard = document.getElementById("main-div").childNodes[1]
-		firstCard.classList.add("bg-gray-100")
-		// context.setCity(cities.find(e => e.name === "Ankara"))
-
-
-		axios.get(apiUrl(cities.find(e => e.name === "Ankara").lat,cities.find(e => e.name === "Ankara").lon))
+	const getData = (city) => {
+		axios.get(apiUrl(cities.find(e => e.name === city).lat, cities.find(e => e.name === city).lon))
 			.then(res => {
 				context.setCity(res.data)
+				setRender(true)
 			})
+	}
 
+
+	const handleOnChange = (cards, city) => {
+		cardEffect(cards)
+		getData(city)
+	}
+
+	useEffect(() => {
+		getData("Ankara")
 	}, [])
+
+	useEffect(() => {
+		if (render) {
+			const cards = [...document.querySelectorAll(".card")]
+			cardEffect(cards)
+		}
+	}, [render])
+
 
 	return (
 		<div id="main-div"
@@ -92,9 +89,11 @@ const Weather = () => {
 				</select>
 			</div>
 			<div className={"w-[748px] hidden h-[134px] bg-gray-100 rounded-lg animate-pulse"}></div>
-			{orderedDays.map((day, index) => (
-				<Card key={index} day={day} dayNum={index}/>
-			))}
+			<div className={"flex gap-3 h-[134px] w-[804px]"}>
+				{render && orderedDays.map((day, index) => (
+					<Card key={index} day={day} dayNum={index}/>
+				))}
+			</div>
 		</div>
 	)
 }
