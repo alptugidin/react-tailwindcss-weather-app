@@ -3,6 +3,7 @@ import {useEffect} from "react";
 import {cities} from "./cities";
 import {useForecast} from "../context";
 import {data} from "../data";
+import axios from "axios";
 
 const cardEffect = (cards) => {
 
@@ -39,13 +40,18 @@ const Weather = () => {
 	const handleOnChange = (cards, city) => {
 		cardEffect(cards)
 
-		context.setCity(cities.find(e => e.name === city))
+
+
+		axios.get(apiUrl(cities.find(e => e.name === city).lat,cities.find(e => e.name === city).lon))
+			.then(res => {
+				context.setCity(res.data)
+			})
+
 	}
 
-	// const apiUrl = (lat, lon) => {
-		// return `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&lang=tur&units=metric&exclude=current,minutely,hourly,alerts&APPID=b8fbe538701d657b1c6a0cf89d075344`
-		// return data
-	// }
+	const apiUrl = (lat, lon) => {
+		return `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&lang=tur&units=metric&exclude=current,minutely,hourly,alerts&APPID=b8fbe538701d657b1c6a0cf89d075344`
+	}
 
 
 	useEffect(() => {
@@ -55,7 +61,12 @@ const Weather = () => {
 		const firstCard = document.getElementById("main-div").childNodes[1]
 		firstCard.classList.add("bg-gray-100")
 		// context.setCity(cities.find(e => e.name === "Ankara"))
-		context.setCity(data)
+
+
+		axios.get(apiUrl(cities.find(e => e.name === "Ankara").lat,cities.find(e => e.name === "Ankara").lon))
+			.then(res => {
+				context.setCity(res.data)
+			})
 
 	}, [])
 
